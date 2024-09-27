@@ -1084,3 +1084,824 @@ class MyQueue {
         return $stack->top();
     }
 //}
+//--------------34 Course Schedule--------------
+class Solution {
+
+    /**
+     * @param Integer $numCourses
+     * @param Integer[][] $prerequisites
+     * @return Boolean
+     */
+    function canFinish($numCourses, $prerequisites) {
+        $nodes = [];
+
+        foreach ($prerequisites as $p) {
+            if (isset($nodes[$p[0]])) {
+                $node = $nodes[$p[0]];
+            } else {
+                $node = new stdClass();
+                $node->neighbors = [];
+                $node->visited = false;
+                $node->complete = false;
+            }
+
+            $node->neighbors[] = $p[1];
+            $nodes[$p[0]] = $node;
+        }
+
+        foreach ($nodes as $i => $n) {
+            if (self::dfs($nodes, $n)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    static function dfs(&$nodes, &$node)
+    {
+        if ($node === null) {
+            return false;
+        }
+
+        if ($node->complete === true) {
+            return false;
+        }
+
+        if ($node->visited === true) {
+            return true;
+        }
+
+        $node->visited = true;
+
+        foreach ($node->neighbors as $n) {
+            if (self::dfs($nodes, $nodes[$n])) {
+                return true;
+            }
+        }
+
+        $node->complete = true;
+        return false;
+    }
+}
+//--------------35 Implement Trie (Prefix Tree)--------------
+class MyTrie {
+    public $tr = [];
+    public $isWord = [];
+    public $root;
+    public $id;
+
+    public function init() {
+        $this->root = 0;
+        $this->id = 1;
+        array_push($this->tr, array_fill(0, 26, -1));
+        array_push($this->isWord, false);
+    }
+
+    public function newNode() {
+        array_push($this->tr, array_fill(0, 26, -1));
+        array_push($this->isWord, false);
+        $newnode = $this->id;
+        $this->id++;
+        return $newnode;
+    }
+
+    public function add(&$s) {
+        $u = $this->root;
+        $n = strlen($s);
+        for ($i = 0; $i < $n; $i++) {
+            $c = ord($s[$i]) - ord('a');
+            if ($this->tr[$u][$c] == -1) {
+                $this->tr[$u][$c] = $this->newNode();
+            }
+            $u = $this->tr[$u][$c];
+        }
+        $this->isWord[$u] = true;
+    }
+
+    public function find(&$s) {
+        $u = $this->root;
+        $n = strlen($s);
+        for ($i = 0; $i < $n && $u != -1; $i++) {
+            $c = ord($s[$i]) - ord('a');
+            $u = $this->tr[$u][$c];
+        }
+        return $u;
+    }
+}
+
+class Trie {
+    /**
+     */
+    public $tr;
+    function __construct() {
+        $this->tr = new MyTrie();
+        $this->tr->init();
+    }
+    /**
+     * @param String $word
+     * @return NULL
+     */
+    function insert($word) {
+        $this->tr->add($word);
+    }
+
+    /**
+     * @param String $word
+     * @return Boolean
+     */
+    function search($word) {
+        $node =  $this->tr->find($word);
+        return $node != -1 && $this->tr->isWord[$node];
+    }
+
+    /**
+     * @param String $prefix
+     * @return Boolean
+     */
+    function startsWith($prefix) {
+        $node =  $this->tr->find($prefix);
+        return $node != -1;
+    }
+}
+
+/**
+ * Your Trie object will be instantiated and called as such:
+ * $obj = Trie();
+ * $obj->insert($word);
+ * $ret_2 = $obj->search($word);
+ * $ret_3 = $obj->startsWith($prefix);
+ */
+//--------------36 Coin Change--------------
+class Solution {
+
+    /**
+     * @param Integer[] $coins
+     * @param Integer $amount
+     * @return Integer
+     */
+    function coinChange($coins, $amount) {
+
+        $dp = array_fill(0, $amount + 1, PHP_INT_MAX);
+        $dp[0] = 0;
+
+        for ($i = 1; $i <= $amount; $i++) {
+            foreach ($coins as $coin) {
+                if ($i >= $coin) {
+                    $dp[$i] = min($dp[$i], $dp[$i - $coin] + 1);
+                }
+            }
+        }
+
+        return $dp[$amount] !== PHP_INT_MAX ? $dp[$amount] : -1;
+    }
+}
+//--------------37 Product of Array Except Self--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @return Integer[]
+     */
+    function productExceptSelf($nums) {
+        $current = 1;
+        $currentOtherSide = 1;
+
+        foreach($nums as $key=>$value){
+            $current *= $value;
+            $currentOtherSide *= $nums[count($nums) - 1 - $key];
+            $res[] = $current;
+            $resOtherSide[] = $currentOtherSide;
+        }
+
+        for($i = 0;$i < count($nums);$i++){
+
+            $arrRes[] = (isset($res[$i - 1]) ? $res[$i - 1] : 1) *
+                (isset($resOtherSide[count($nums) - $i - 2]) ? $resOtherSide[count($nums) - $i - 2] : 1);
+        }
+
+        return $arrRes;
+    }
+}
+//--------------38 Min Stack--------------
+class MinStack {
+    private $stack = [];
+    private $minStack = [];
+
+    public function push($value) {
+        array_push($this->stack, $value);
+
+        if (empty($this->minStack) || $value <= $this->minStack[count($this->minStack) - 1]) {
+            array_push($this->minStack, $value);
+        }
+    }
+
+    public function pop() {
+        if (count($this->stack) > 0) {
+            $top = array_pop($this->stack);
+            if ($top == $this->minStack[count($this->minStack) - 1]) {
+                array_pop($this->minStack);
+            }
+        }
+    }
+
+    public function top() {
+        if (count($this->stack) > 0) {
+            return $this->stack[count($this->stack) - 1];
+        }
+    }
+
+    public function getMin() {
+        if (count($this->minStack) > 0) {
+            return $this->minStack[count($this->minStack) - 1];
+        }
+    }
+    public function getstack() {
+        print_r($this->stack);
+        echo "<br>";
+    }
+}
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * $obj = MinStack();
+ * $obj->push($val);
+ * $obj->pop();
+ * $ret_3 = $obj->top();
+ * $ret_4 = $obj->getMin();
+ */
+//--------------39 Validate Binary Search Tree--------------
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     public $val = null;
+ *     public $left = null;
+ *     public $right = null;
+ *     function __construct($val = 0, $left = null, $right = null) {
+ *         $this->val = $val;
+ *         $this->left = $left;
+ *         $this->right = $right;
+ *     }
+ * }
+ */
+class Solution {
+
+    /**
+     * @param TreeNode $root
+     * @return Boolean
+     */
+    public function isValidBST($root, $min = null, $max = null)
+    {
+        return $root === null || (
+                ($min === null || $root->val > $min) &&
+                ($max === null || $root->val < $max) &&
+                $this->isValidBST($root->left, $min, $root->val) &&
+                $this->isValidBST($root->right, $root->val, $max)
+            );
+    }
+}
+//--------------40 Number of Islands--------------
+class Solution {
+
+    /**
+     * @param String[][] $grid
+     * @return Integer
+     */
+    function numIslands($grid) {
+        $islands = 0;
+        $directions = [[0,1], [0, -1], [1,0],[-1,0]];
+        // visited node = 2
+        for($i = 0; $i < sizeof($grid); $i++){
+            for($j = 0; $j < sizeof($grid[0]); $j++){
+                if($grid[$i][$j] === '1'){
+                    $islands++;
+                    $this->d($i, $j, $grid, $directions);
+                }
+            }
+        }
+        return $islands;
+    }
+
+    function d($i, $j, &$grid, $directions){
+        if($grid[$i][$j] != '1' || ! isset($grid[$i][$j]))
+            return;
+        $grid[$i][$j] = '2';
+        foreach($directions as $dir){
+            $r = $i + $dir[0];
+            $c = $j + $dir[1];
+            $this->d($r, $c, $grid, $directions);
+        }
+    }
+}
+//--------------41 Rotting Oranges--------------
+class Solution
+{
+
+    /**
+     * @param Integer[][] $grid
+     * @return Integer
+     */
+    function orangesRotting($grid, $minutes = 0)
+    {
+        while (false !== strpos(json_encode($grid), '1') && ++$minutes) {
+            $copy = $grid;
+            for ($i = 0; $i < count($copy); $i++) {
+                for ($j = 0; $j < count($copy[$i]); $j++) {
+                    if (2 !== $grid[$i][$j]) continue;
+                    if (isset($grid[$i - 1]) && 1 === $grid[$i - 1][$j]) $copy[$i - 1][$j] = 2;
+                    if (isset($grid[$i + 1]) && 1 === $grid[$i + 1][$j]) $copy[$i + 1][$j] = 2;
+                    if (isset($grid[$i][$j - 1]) && 1 === $grid[$i][$j - 1]) $copy[$i][$j - 1] = 2;
+                    if (isset($grid[$i][$j + 1]) && 1 === $grid[$i][$j + 1]) $copy[$i][$j + 1] = 2;
+                }
+            }
+            if ($grid === $copy) break;
+            $grid = $copy;
+        }
+        return false !== strpos(json_encode($grid), '1') ? -1 : $minutes;
+    }
+}
+//--------------42 Search in Rotated Sorted Array--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @param Integer $target
+     * @return Integer
+     */
+    function search($nums, $target) {
+        $left = 0;
+        $right = count($nums) - 1;
+
+        while($left <= $right){
+            $mid = round(($right+$left)/2);
+            if($nums[$mid] == $target){
+                return $mid;
+            }
+            #check if left side is sorted
+            if($nums[$left] < $nums[$mid]){
+                if( $nums[$left] <= $target && $target < $nums[$mid]){
+                    $right = $mid -1;
+
+                }else{
+                    $left = $mid +1;
+                }
+
+            }else{
+                if($nums[$mid] < $target &&  $target <= $nums[$right]){
+                    $left = $mid +1;
+
+                }else{
+                    $right = $mid -1;
+                }
+
+            }
+        }
+        return -1;
+    }
+}
+//--------------43 Combination Sum--------------
+class Solution {
+
+    private $target = null;
+    /**
+     * @param Integer[] $candidates
+     * @param Integer $target
+     * @return Integer[][]
+     */
+    function combinationSum($candidates, $target) {
+        $this->target = $target;
+
+        $this->recursiveSum($candidates, $result);
+
+        return $result ?? [];
+    }
+
+    private function recursiveSum($candidates, &$result = [], $path = '')
+    {
+        if ($path) {
+            $sum = array_sum($values = explode(',', $path));
+
+            switch (true) {
+                case $sum === $this->target:
+                    $result[] = $values;
+                case $sum > $this->target:
+                    return;
+            }
+        }
+
+        for ($i = 0; $i < count($candidates); $i++) {
+            $this->recursiveSum(array_slice($candidates, $i), $result, ltrim($path . ',' . $candidates[$i], ','));
+        }
+    }
+}
+//--------------44 Permutations--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @return Integer[][]
+     */
+    function permute($nums) {
+        $res=[];
+        if(sizeof($nums)==1){
+            array_push($res,[$nums[0]]);
+            return $res;
+        }
+        else{
+            foreach($nums as $num){
+                $first=array_shift($nums);
+                $perms=$this->permute($nums);
+                foreach($perms as $perm){
+                    array_push($perm,$first);
+                    array_push($res,$perm);
+                }
+                array_push($nums,$first);
+            }
+        }
+        return $res;
+    }
+}
+//--------------45 Merge Intervals--------------
+class Solution {
+
+    /**
+     * @param Integer[][] $intervals
+     * @return Integer[][]
+     */
+    function merge($intervals) {
+        $count = count($intervals);
+        if ($count == 1) {
+            return $intervals;
+        }
+        usort($intervals, function($a, $b) {
+            $a = $a[0];
+            $b= $b[0];
+            if ($a == $b) {
+                return 0;
+            }
+            return ($a < $b) ? -1 : 1;
+        });
+        $start = $intervals[0];
+        $res = [$start];
+        $k = 0;
+        for ($i = 1; $i < $count; $i++) {
+            $old = $res[$k];
+            $oleft = $old[0];
+            $oright = $old[1];
+            $new = $intervals[$i];
+            $left = $new[0];
+            $right = $new[1];
+            if ($left > $oright) {
+                $res[] = $new;
+                $k++;
+            } else {
+                if ($right > $oright) {
+                    $res[$k][1] = $right;
+                }
+            }
+        }
+        return $res;
+
+    }
+}
+//--------------46 Lowest Common Ancestor of a Binary Tree--------------
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     public $val = null;
+ *     public $left = null;
+ *     public $right = null;
+ *     function __construct($value) { $this->val = $value; }
+ * }
+ */
+
+class Solution {
+    /**
+     * @param TreeNode $root
+     * @param TreeNode $p
+     * @param TreeNode $q
+     * @return TreeNode
+     */
+    function lowestCommonAncestor($root, $p, $q) {
+        $pPath=[];
+        $qPath=[];
+        $this->findPath($root, $p, $pPath);
+        $this ->findPath($root, $q, $qPath);
+
+        // Compare the paths to get the first different value
+        $i = 0;
+        while($i < sizeof($pPath) && $i < sizeof($qPath)){
+            if ($pPath[$i] != $qPath[$i])
+                break;
+            $i += 1;
+        }
+        return $pPath[$i-1];
+    }
+
+    function findPath($root, $target, &$path){
+        if($root == null){
+            return false;
+        }
+        array_push($path, $root);
+        if($root == $target){
+            return true;
+        }
+        if($this->findPath($root->left, $target, $path) || $this->findPath($root->right, $target, $path) )
+            return true;
+        array_pop($path);
+        return false;
+    }
+}
+//--------------47 Time Based Key-Value Store--------------
+class TimeMap {
+    /**
+     */
+    function __construct() {
+
+    }
+
+    /**
+     * @param String $key
+     * @param String $value
+     * @param Integer $timestamp
+     * @return NULL
+     */
+    function set($key, $value, $timestamp) {
+        $this->map[$key][$timestamp] = $value;
+    }
+
+    /**
+     * @param String $key
+     * @param Integer $timestamp
+     * @return String
+     */
+    function get($key, $timestamp) {
+        if (!isset($this->map[$key])) {
+            return '';
+        }
+        $vals = &$this->map[$key] ?? [];
+
+        if (isset($vals[$timestamp])){
+            return $vals[$timestamp];
+        }
+
+        if (array_key_last($vals) < $timestamp){
+            return end($vals);
+        }
+        $keys = array_keys($vals);
+        $l = 0;
+        $r = count($vals) - 1;
+        while ($l <= $r) {
+            $mid = intdiv($r + $l, 2);
+            $midT = $keys[$mid];
+            $midV = $vals[$midT];
+            $nextT = $keys[$mid + 1] ?? PHP_INT_MAX;
+
+            if ($timestamp > $midT && $timestamp < $nextT) {
+                return $midV;
+            }
+
+            if ($midT > $timestamp) {
+                $r = $mid - 1;
+            } else {
+                $currentDiff = $timestamp - $midT;
+                if ($currentDiff < $minDifff) {
+                    $minDifff = $currentDiff;
+                    $clossest = $midV;
+                }
+                $l = $mid + 1;
+            }
+        }
+
+        return '';
+    }
+}
+
+/**
+ * Your TimeMap object will be instantiated and called as such:
+ * $obj = TimeMap();
+ * $obj->set($key, $value, $timestamp);
+ * $ret_2 = $obj->get($key, $timestamp);
+ */
+//--------------48 Accounts Merge--------------
+class Solution {
+
+    /**
+     * @param String[][] $accounts
+     * @return String[][]
+     */
+
+    function accountsMerge($accounts) {
+        $email_to_name = array();
+        $graph = array();
+        foreach ($accounts as $account) {
+            $name = $account[0];
+            for ($i = 1; $i < count($account); $i++) {
+                $email = $account[$i];
+                $graph[$email][] = $account[1];
+                $graph[$account[1]][] = $email;
+                $email_to_name[$email] = $name;
+            }
+        }
+        $merged = array();
+        $seen = array();
+        foreach ($graph as $email => $neighbors) {
+            if (!in_array($email, $seen)) {
+                array_push($seen, $email);
+                $stack = array($email);
+                $component = array();
+                while ($stack) {
+                    $node = array_pop($stack);
+                    array_push($component, $node);
+                    foreach ($graph[$node] as $neighbor) {
+                        if (!in_array($neighbor, $seen)) {
+                            array_push($seen, $neighbor);
+                            array_push($stack, $neighbor);
+                        }
+                    }
+                }
+                sort($component);
+                array_push($merged, array_merge(array($email_to_name[$email]),$component));
+            }
+        }
+        return $merged;
+    }
+}
+//--------------49 Sort Colors--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @return NULL
+     */
+    function sortColors(&$a) {
+        $next0 = 0;
+        $next2 = count($a) - 1;
+        $i = 0;
+        while (true) {
+            if ($i > $next2) {
+                break;
+            }
+            if ($a[$i] == 2) {
+                $this->swap($a, $i, $next2);
+                $next2--;
+            } elseif ($a[$i] == 0) {
+                $this->swap($a, $i, $next0);
+                $next0++;
+                $i++;
+            }
+            elseif ($a[$i] == 1) {
+                $i++;
+            }
+        }
+    }
+
+    function swap(&$a, $i1, $i2) {
+        $value = $a[$i1];
+        $a[$i1] = $a[$i2];
+        $a[$i2] = $value;
+    }
+}
+//--------------50 Word Break--------------
+class Solution {
+
+    /**
+     * @param String $s
+     * @param String[] $wordDict
+     * @return Boolean
+     */
+    function wordBreak($s, $wordDict) {
+        if ($s === '') return true;
+
+        $len = strlen($s);
+        $cache = [0 => true] + array_fill(1, $len, false);
+
+        for ($i = 0; $i < $len; $i++) {
+            for ($j = $i + 1; $j <= $len; $j++) {
+                $prefix = substr($s, $i, $j - $i);
+                if (in_array($prefix, $wordDict) && $cache[$i]) {
+                    $cache[$j] = true;
+                    if ($cache[$len]) return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+//--------------51 Partition Equal Subset Sum--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @return Boolean
+     */
+    function canPartition($nums) {
+        $target = array_sum($nums) / 2;
+        if (!is_int($target)) {
+            return false;
+        }
+        $length = count($nums);
+        $canMake = array_fill(0, $target + 1, false);
+        $canMake[0] = true;
+        for ($i = 1; $i <= $length; $i++) {
+            $value = $nums[$i - 1];
+            for ($sum = $target; $sum >= 0; $sum--) {
+                if ($sum - $value < 0) {
+                    break;
+                }
+                $canMake[$sum] = $canMake[$sum - $value] || $canMake[$sum];
+            }
+        }
+
+        return $canMake[$target];
+    }
+}
+//--------------52 String to Integer (atoi)--------------
+class Solution
+{
+
+    /**
+     * @param String $s
+     * @return Integer
+     */
+    function myAtoi($s)
+    {
+        $s = trim($s);
+        $leading = true;
+        $result = '';
+        $sign = '';
+
+        foreach (str_split($s) as $char) {
+
+            if ($char == '+' || $char == '-') {
+                if ($sign == '' && $leading) {
+                    $sign = $char;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+            if (is_numeric($char)) {
+                $leading = false;
+                if (strlen($result) == 0 && $char == "0") {
+                    continue;
+                }
+                $result .= $char;
+            }
+            if (!is_numeric($char)) {
+                break;
+            }
+        }
+        $result = $sign . $result;
+
+        if ($result == '' || $result == '+' || $result == '-') {
+            return 0;
+        } else {
+            return max(-2147483648, min(2147483647, (int)$result));
+        }
+    }
+}
+//--------------53 Spiral Matrix--------------
+class Solution {
+
+    /**
+     * @param Integer[][] $matrix
+     * @return Integer[]
+     */
+    function spiralOrder($matrix) {
+
+        $rows =  count($matrix);
+        $cols = count($matrix[0]);
+
+        $top = 0;
+        $left = 0;
+        $right = $cols -1;
+        $bottom = $rows -1;
+
+        $output = [];
+
+        while(count($output) < $rows * $cols) {
+
+            for($col = $left;$col <= $right;$col++) {
+                $output[] = $matrix[$top][$col];
+            }
+            for($row = $top +1;$row <= $bottom;$row++) {
+                $output[] = $matrix[$row][$right];
+            }
+            if($top != $bottom) {
+                for($col = $right -1;$col >= $left;$col--) {
+                    $output[] = $matrix[$bottom][$col];
+                }
+            }
+            if($left != $right) {
+                for($row = $bottom -1;$row > $top;$row--) {
+                    $output[] = $matrix[$row][$left];
+                }
+            }
+            $left++;
+            $right--;
+            $top++;
+            $bottom--;
+        }
+        return($output);
+    }
+}

@@ -1905,3 +1905,570 @@ class Solution {
         return($output);
     }
 }
+//--------------54 Subsets--------------
+class Solution {
+
+    /**
+     * @param Integer[] $nums
+     * @return Integer[][]
+     */
+    function backtrack($nums, $cur, &$ans) {
+        array_push($ans, $cur);
+        for ($i = 0 ; $i < count($nums); $i++) {
+            array_push($cur, $nums[$i]);
+            $this->backtrack(array_slice($nums, $i+1), $cur, $ans);
+            array_pop($cur);
+        }
+    }
+    function subsets($nums) {
+        $ans = [];
+        $this->backtrack($nums, [], $ans);
+        return $ans;
+    }
+}
+//--------------55 Binary Tree Right Side View--------------
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     public $val = null;
+ *     public $left = null;
+ *     public $right = null;
+ *     function __construct($val = 0, $left = null, $right = null) {
+ *         $this->val = $val;
+ *         $this->left = $left;
+ *         $this->right = $right;
+ *     }
+ * }
+ */
+class Solution {
+
+    /**
+     * @param TreeNode $root
+     * @return Integer[]
+     */
+    function rightSideView($root) {
+        if (is_null($root)) {
+            return [];
+        }
+
+        $this->iterateByLevel([$root]);
+
+        return $this->res;
+    }
+
+    private function iterateByLevel(array $nodes) {
+        $this->res[] = $nodes[count($nodes) - 1]->val;
+        $newNodes = [];
+        for ($i = 0; $i < count($nodes); $i++) {
+            $node = $nodes[$i];
+            if ($node->left) {
+                $newNodes[] = $node->left;
+            }
+
+            if ($node->right) {
+                $newNodes[] = $node->right;
+            }
+        }
+
+        if (!empty($newNodes)) {
+            $this->iterateByLevel($newNodes);
+        }
+    }
+}
+//--------------56 Longest Palindromic Substring--------------
+class Solution {
+    public function longestPalindrome($s) {
+        $processedStr = "^#";
+        for ($i = 0; $i < strlen($s); $i++) {
+            $processedStr .= $s[$i] . "#";
+        }
+        $processedStr .= "$";
+        $modifiedString = $processedStr;
+        $strLength = strlen($modifiedString);
+        $palindromeLengths = array_fill(0, $strLength, 0);
+        $center = 0;
+        $rightEdge = 0;
+
+        for ($i = 1; $i < $strLength - 1; $i++) {
+            $palindromeLengths[$i] = ($rightEdge > $i) ? min($rightEdge - $i, $palindromeLengths[2 * $center - $i]) : 0;
+
+            while ($modifiedString[$i + 1 + $palindromeLengths[$i]] == $modifiedString[$i - 1 - $palindromeLengths[$i]]) {
+                $palindromeLengths[$i]++;
+            }
+
+            if ($i + $palindromeLengths[$i] > $rightEdge) {
+                $center = $i;
+                $rightEdge = $i + $palindromeLengths[$i];
+            }
+        }
+
+        $maxLength = 0;
+        $maxCenter = 0;
+        for ($i = 0; $i < $strLength; $i++) {
+            if ($palindromeLengths[$i] > $maxLength) {
+                $maxLength = $palindromeLengths[$i];
+                $maxCenter = $i;
+            }
+        }
+
+        $start = ($maxCenter - $maxLength) / 2;
+        $end = $start + $maxLength;
+
+        return substr($s, $start, $end - $start);
+    }
+}
+//--------------57 Unique Paths--------------
+class Solution {
+
+    /**
+     * @param Integer $m
+     * @param Integer $n
+     * @return Integer
+     */
+    function uniquePaths($m, $n) {
+        $data = array_fill(0, $n+1, 1);
+
+        for ($i = $m - 1; $i > 0; $i--) {
+            for ($j = $n - 1; $j > 0; $j--) {
+                $data[$j] = $data[$j] + $data[$j+1];
+            }
+        }
+
+        return $data[1];
+    }
+}
+//--------------58 Construct Binary Tree from Preorder and Inorder Traversal--------------
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     public $val = null;
+ *     public $left = null;
+ *     public $right = null;
+ *     function __construct($val = 0, $left = null, $right = null) {
+ *         $this->val = $val;
+ *         $this->left = $left;
+ *         $this->right = $right;
+ *     }
+ * }
+ */
+class Solution {
+
+    /**
+     * @param Integer[] $preorder
+     * @param Integer[] $inorder
+     * @return TreeNode
+     */
+    function buildTree($preorder, $inorder) {
+        if (empty($preorder)) {
+            return null;
+        }
+
+        $value = array_shift($preorder);
+        $pos = array_search($value, $inorder);
+
+        $root = new TreeNode(
+            $value,
+            $this->buildTree(
+                array_slice($preorder, 0, $pos),
+                array_slice($inorder, 0, $pos)
+            ),
+            $this->buildTree(
+                array_slice($preorder, $pos),
+                array_slice($inorder, $pos + 1)
+            )
+        );
+
+        return $root;
+    }
+}
+//--------------59 Container With Most Water--------------
+class Solution {
+
+    /**
+     * @param Integer[] $height
+     * @return Integer
+     */
+    function maxArea($height) {
+        $n = count($height);
+        if($n < 2)
+        {
+            return "Number of containers too low.";
+        }
+        $max_n = pow(10,5);
+        if($n > $max_n)
+        {
+            return "Number of containers exceeds.";
+        }
+        $result = 0;
+        $max_h = pow(10,4);
+        $i = 0;
+        $j = $n-1;
+        while($i < $j)
+        {
+            if($height[$i] > $max_h)
+            {
+                return "Height of left container exceeds.";
+            }
+            if($height[$j] > $max_h)
+            {
+                return "Height of right container exceeds.";
+            }
+            $curr = min($height[$i], $height[$j]) * ($j-$i);
+            $result = max($result, $curr);
+            if($height[$i] < $height[$j])
+            {
+                $i++;
+            }
+            else{
+                $j--;
+            }
+        }
+        return $result;
+    }
+}
+//--------------60 Letter Combinations of a Phone Number--------------
+class Solution {
+
+    /**
+     * @param String $digits
+     * @return String[]
+     */
+    function letterCombinations($digits): array
+    {
+        if (empty($digits)) {
+            return [];
+        }
+
+        $phoneKeyboard = [
+            2 => 'abc',
+            3 => 'def',
+            4 => 'ghi',
+            5 => 'jkl',
+            6 => 'mno',
+            7 => 'pqrs',
+            8 => 'tuv',
+            9 => 'wxyz',
+        ];
+
+        $combinations = [];
+        $this->generateCombinations($phoneKeyboard, $digits, 0, '', $combinations);
+        return $combinations;
+    }
+
+    private function generateCombinations($phoneKeyboard, $digits, $index, $current, &$combinations): void
+    {
+        if ($index === strlen($digits)) {
+            $combinations[] = $current;
+            return;
+        }
+
+        $letters = $phoneKeyboard[$digits[$index]];
+        for ($i = 0; $i < strlen($letters); $i++) {
+            $this->generateCombinations(
+                $phoneKeyboard,
+                $digits,
+                $index + 1,
+                $current . $letters[$i],
+                $combinations
+            );
+        }
+    }
+}
+//--------------61 Word Search--------------
+class Solution {
+
+    /**
+     * @param String[][] $board
+     * @param String $word
+     * @return Boolean
+     */
+
+    private $board;
+    private $used;
+    private $width;
+    private $height;
+    private $result;
+    private $currUsed;
+
+    function searchWord($sp, $wordAr, $pos) {
+        $this->used[$sp[0]][$sp[1]] = true;
+        $this->currUsed[] = $sp;
+
+        if ((isset($this->board[$sp[0]][$sp[1]+1])) && (!$this->used[$sp[0]][$sp[1]+1])){
+
+            if ($this->board[$sp[0]][$sp[1]+1] === $wordAr[$pos])  {
+                if ($pos == count($wordAr)-1) {
+                    $this->result = true;
+                    return;
+                } else {
+                    $this->searchWord([$sp[0],$sp[1]+1], $wordAr, $pos+1); // if there are letters in the word left - search further, starting with the next letter
+                    if(!$this->result){
+                        for ($k = $pos; $k < count($this->currUsed); $k++){
+                            $this->used[$this->currUsed[$k][0]][$this->currUsed[$k][1]] = false;
+                            array_pop($this->currUsed);
+                            end($this->currUsed);
+                        }
+                    }
+                }
+            }
+        }
+        if ((isset($this->board[$sp[0]][$sp[1]-1])) && (!$this->used[$sp[0]][$sp[1]-1])){
+            if ($this->board[$sp[0]][$sp[1]-1] === $wordAr[$pos])  {
+                if ($pos == count($wordAr)-1) {
+                    $this->result = true;
+                    return;
+                } else {
+                    $this->searchWord([$sp[0],$sp[1]-1], $wordAr, $pos+1);
+                    if(!$this->result){
+                        for ($k = $pos; $k < count($this->currUsed); $k++){
+                            $this->used[$this->currUsed[$k][0]][$this->currUsed[$k][1]] = false;
+                            array_pop($this->currUsed);
+                            end($this->currUsed);
+                        }
+                    }
+                }
+            }
+        }
+        if ((isset($this->board[$sp[0]-1][$sp[1]])) && (!$this->used[$sp[0]-1][$sp[1]])){
+            if ($this->board[$sp[0]-1][$sp[1]] === $wordAr[$pos])  {
+                if ($pos == count($wordAr)-1) {
+                    $this->result = true;
+                    return;
+                } else {
+                    $this->searchWord([$sp[0]-1,$sp[1]], $wordAr, $pos+1);
+                    if(!$this->result){
+                        for ($k = $pos; $k < count($this->currUsed); $k++){
+                            $this->used[$this->currUsed[$k][0]][$this->currUsed[$k][1]] = false;
+                            array_pop($this->currUsed);
+                            end($this->currUsed);
+                        }
+                    }
+                }
+            }
+        }
+        if ((isset($this->board[$sp[0]+1][$sp[1]])) && (!$this->used[$sp[0]+1][$sp[1]])){
+
+            if ($this->board[$sp[0]+1][$sp[1]] === $wordAr[$pos])  {
+                if ($pos == count($wordAr)-1) {
+
+                    $this->result = true;
+                    return;
+                } else {
+                    $this->searchWord([$sp[0]+1,$sp[1]], $wordAr, $pos+1);
+                    if(!$this->result){
+                        for ($k = $pos; $k < count($this->currUsed); $k++){
+                            $this->used[$this->currUsed[$k][0]][$this->currUsed[$k][1]] = false;
+                            array_pop($this->currUsed);
+                            end($this->currUsed);
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    function exist($board, $word) {
+        $this->width = count($board[0]);
+        $this->height = count($board);
+        $this->board = $board;
+        $this->result = false;
+        $startPos = array();
+        $wordAr = str_split($word);
+        for ($i = 0; $i < $this->height; $i++){
+            for ($j = 0; $j < $this->width; $j++){
+                if ($board[$i][$j] == $wordAr[0]) {
+                    $startPos[] = [$i,$j];
+                }
+            }
+        }
+        if (empty($startPos)) {
+            return false;
+        }
+
+        if (count($wordAr) == 1) {
+            return true;
+        }
+
+        foreach ($startPos as $sp){
+            $this->used = array_fill(0,$this->height,array_fill(0,$this->width,false));
+            $this->currUsed = array();
+            $this->searchWord($sp, $wordAr, 1);
+            if ($this->result) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+//--------------62 Find All Anagrams in a String--------------
+class Solution {
+
+    /**
+     * @param String $s
+     * @param String $p
+     * @return Integer[]
+     */
+    function findAnagrams($s, $p) {
+        $pl = strlen($p);
+        $sl = strlen($s);
+
+        $out = [];
+        $pC = $this->getCCount($p, $pl);
+        $rC = $this->getCCount(str_split(substr($s, $i, $pl)), $pl);
+
+        for ($i = 1; $i <= $sl - $pl + 1; $i++) { //sliding window
+            if ($pC === $rC) {
+                $out[] = $i - 1;
+            }
+            $pIndex = ord($s[$i - 1]) - ord('a'); //Remove count of last character
+            $rC[$pIndex] -= 1;
+            $iIndex = ord($s[$i - 1 + $pl]) - ord('a'); //Add count of next character
+            $rC[$iIndex] += 1;
+        }
+        return $out;
+    }
+
+    function getCCount($s, $l) {
+        $count = array_fill(0, 26, 0);
+        for ($i = 0; $i < $l; $i++) {
+            $index = ord($s[$i]) - ord('a');
+            $count[$index] += 1;
+        }
+        return $count;
+    }
+}
+//--------------63 Minimum Height Trees--------------
+class Solution {
+
+    /**
+     * @param Integer $n
+     * @param Integer[][] $edges
+     * @return Integer[]
+     */
+    function findMinHeightTrees($n, $edges) {
+        if ($n === 1) return [0];
+
+        $adjacencyList = array_fill(0, $n, []);
+        $degree = array_fill(0, $n, 0);
+
+        foreach ($edges as $edge) {
+            $u = $edge[0];
+            $v = $edge[1];
+            $adjacencyList[$u][] = $v;
+            $adjacencyList[$v][] = $u;
+            $degree[$u]++;
+            $degree[$v]++;
+        }
+
+        $queue = new SplQueue();
+
+        for ($i = 0; $i < $n; $i++) {
+            if ($degree[$i] === 1) {
+                $queue->enqueue($i);
+            }
+        }
+
+        $remainingNodes = $n;
+        while ($remainingNodes > 2) {
+            $numNodesAtCurrentLevel = $queue->count();
+            $remainingNodes -= $numNodesAtCurrentLevel;
+
+            for ($i = 0; $i < $numNodesAtCurrentLevel; $i++) {
+                $node = $queue->dequeue();
+
+                foreach ($adjacencyList[$node] as $neighbor) {
+                    $degree[$neighbor]--;
+                    if ($degree[$neighbor] === 1) {
+                        $queue->enqueue($neighbor);
+                    }
+                }
+            }
+        }
+
+        $result = [];
+        while (!$queue->isEmpty()) {
+            $result[] = $queue->dequeue();
+        }
+
+        return $result;
+    }
+}
+//--------------64 Task Scheduler--------------
+class Solution {
+
+    /**
+     * @param String[] $tasks
+     * @param Integer $n
+     * @return Integer
+     */
+    function leastInterval($tasks, $n) {
+
+        $record = [];
+        foreach ($tasks as $task) {
+            $record[$task] = isset($record[$task]) ? $record[$task] + 1 : 1;
+        }
+
+        sort($record);
+
+        $len = count($record);// kind of tasks
+        $max_n = $record[$len - 1] - 1;
+        $space = $max_n * $n;
+
+        for ($i=$len - 2; $i >= 0; $i--) {
+
+            $space = $space - min($max_n, $record[$i]);
+        }
+
+        return $space > 0 ? count($tasks) + $space : count($tasks);
+    }
+}
+//--------------65 LRU Cache--------------
+class LRUCache {
+    /**
+     * @param Integer $capacity
+     */
+    private $sv;//for store value
+    private $cap;
+    function __construct($capacity) {
+        $this->sv=[];
+        $this->cap=$capacity;
+    }
+
+    /**
+     * @param Integer $key
+     * @return Integer
+     */
+    function get($key) {
+        if(array_key_exists($key,$this->sv)){
+            $ans=$this->sv[$key];
+            unset($this->sv[$key]);
+            $this->sv[$key]=$ans;
+            return $ans;
+        }
+        return -1;
+    }
+
+    /**
+     * @param Integer $key
+     * @param Integer $value
+     * @return NULL
+     */
+    function put($key, $value) {
+        if(array_key_exists($key,$this->sv))
+            unset($this->sv[$key]);
+        $n=count($this->sv);
+        if($n==$this->cap){
+            reset($this->sv);
+            unset($this->sv[key($this->sv)]);
+        }
+        $this->sv[$key]=$value;
+    }
+}
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * $obj = LRUCache($capacity);
+ * $ret_1 = $obj->get($key);
+ * $obj->put($key, $value);
+ */
